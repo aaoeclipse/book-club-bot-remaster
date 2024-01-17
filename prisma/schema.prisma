@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Book {
+  id            Int             @id @default(autoincrement())
+  title         String          @unique()
+  author        String?
+  description   String?
+  user          User            @relation(fields: [createdBy], references: [id])
+  createdBy     Int
+  chapters      Int?
+  progress      Progress[]
+  active_book   ActiveBook[]
+  votes         Vote[]
+  book_election BooksElection[]
+}
+
+model User {
+  id       Int        @id @default(autoincrement())
+  username String
+  role     String?
+  books    Book[]
+  election Election[]
+  progress Progress[]
+  votes    Vote[]
+}
+
+model Election {
+  id         Int       @id @default(autoincrement())
+  startedBy  Int
+  finish     Boolean   @default(false)
+  finishDate DateTime?
+
+  user           User            @relation(fields: [startedBy], references: [id])
+  activeBook     ActiveBook[]
+  book_elections BooksElection[]
+  Vote           Vote[]
+}
+
+model BooksElection {
+  id     Int  @id @default(autoincrement())
+  book   Book @relation(fields: [bookid], references: [id], onDelete: Cascade)
+  bookid Int
+
+  election   Election @relation(fields: [electionid], references: [id], onDelete: Cascade)
+  electionid Int
+}
+
+model ActiveBook {
+  id          Int      @id @default(autoincrement())
+  election    Election @relation(fields: [wonElection], references: [id], onDelete: Cascade)
+  wonElection Int
+  book        Book     @relation(fields: [bookid], references: [id], onDelete: Cascade)
+  bookid      Int
+
+  active Boolean @default(true)
+}
+
+model Progress {
+  id      Int  @id @default(autoincrement())
+  user    User @relation(fields: [userid], references: [id])
+  userid  Int
+  book    Book @relation(fields: [bookid], references: [id], onDelete: Cascade)
+  bookid  Int
+  chapter Int
+}
+
+model Vote {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userid], references: [id])
+  userid Int
+
+  book   Book @relation(fields: [bookid], references: [id], onDelete: Cascade)
+  bookid Int
+
+  election   Election @relation(fields: [electionid], references: [id], onDelete: Cascade)
+  electionid Int
+}
