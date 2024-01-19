@@ -1,10 +1,16 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { getCurrReadingActiveBookDb } from "./infrastructure";
 
+export const getCurrIdOfBook = async () => {
+  const currBook = await getCurrReadingActiveBookDb();
+  if (!currBook || !currBook?.book) return;
+
+  return currBook.book.id;
+};
+
 export const getCurrentReadingBook = async (
   interaction: ChatInputCommandInteraction
 ) => {
-  // TODO: Get winer of the previous election
   const currentBook = await getCurrReadingActiveBookDb();
   console.log(
     "🚀 ~ file: interface.ts:7 ~ getCurrentReadingBook ~ currentBook:",

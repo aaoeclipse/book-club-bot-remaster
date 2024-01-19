@@ -16,6 +16,7 @@ import {
 } from "./commands/commands/elections/index";
 import {
   checkProgress,
+  currProgress,
   nextChapter,
   updateProgress,
 } from "./commands/commands/progress/interface";
@@ -39,6 +40,8 @@ const run_command = {
   update_book: updateBook,
   book_info: getBookDetailView,
   show_current_book: getCurrentReadingBook,
+  curr_progress: currProgress,
+  set_book_progress: updateProgress,
 };
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
