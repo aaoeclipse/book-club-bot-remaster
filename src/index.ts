@@ -56,8 +56,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName in run_command) {
-    // @ts-ignore
-    run_command[interaction.commandName](interaction);
+    try {
+      // @ts-ignore
+      run_command[interaction.commandName](interaction);
+    } catch (error) {
+      console.log("🚀 ~ client.on ~ error:", error);
+      interaction.reply("Error please try again");
+
+      return;
+    }
   }
 });
 

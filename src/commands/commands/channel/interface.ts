@@ -37,17 +37,8 @@ export const handleUserChangeInChapter = async (
   active_book: Book
 ) => {
   // check all values that are below the max value.
-  curr_value += 1;
   while (curr_value < new_value && curr_value < max_value) {
-    // Add permission to that user to those chapters
-    addRoleToUser(interaction, active_book, curr_value);
     curr_value += 1;
-  }
-
-  // if there are chapters remaning (above the max)
-  if (new_value > max_value) {
-    // call the createNewChannels
-    // Add permission to that user to those chapters
     createNewChannels(interaction, max_value, new_value, active_book);
   }
 };
@@ -139,7 +130,7 @@ const createChannel = async (
     .split(" ")
     .join("_")}_ch${channel_ch}`.toLowerCase();
 
-  // Check if role exists:
+  // Check if role exist:
   let role = await interaction.guild.roles.cache.find(
     (e) => e.name === `${channel_name}`
   );
@@ -168,10 +159,10 @@ const createChannel = async (
   };
 
   // CREATE CHANNEL
-  const exists = await interaction.guild.channels.cache.find(
+  const exist = await interaction.guild.channels.cache.find(
     (element) => element.name === channel_name
   );
-  if (!exists) {
+  if (!exist) {
     console.log(`[+] New Chapter ${channel_ch} created!`);
     await interaction.guild.channels.create(channelOptions);
   }
@@ -196,6 +187,11 @@ const addRoleToUser = async (
   userRole = interaction.guild.roles.cache.find(
     (role) => role.name === roleName
   );
+
+  if (!userRole) {
+    console.error("[-] No user role found");
+    return;
+  }
 
   // @ts-ignore
   await interaction.member.roles.add(userRole);

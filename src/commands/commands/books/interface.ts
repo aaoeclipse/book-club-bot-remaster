@@ -16,7 +16,7 @@ import {
 import { getCurrUser } from "../user";
 import { getCurrElection } from "../elections/infrastructure";
 import { getBooksOnElection } from "../elections";
-import { createNewCategory } from "../channel/interface";
+import { getOnlyCurrentReadingBook } from "../activeBook/interface";
 
 export const addBook = async (interaction: ChatInputCommandInteraction) => {
   // Get UserId
@@ -30,7 +30,7 @@ export const addBook = async (interaction: ChatInputCommandInteraction) => {
   if (interaction.options.getString("author")) {
     book["author"] = interaction.options.getString("author") as string;
   }
-  if (!interaction.options.getString("title")) {
+  if (interaction.options.getString("description")) {
     book["description"] = interaction.options.getString(
       "description"
     ) as string;
@@ -46,21 +46,31 @@ export const addBook = async (interaction: ChatInputCommandInteraction) => {
 };
 
 export const removeBook = async (interaction: ChatInputCommandInteraction) => {
-  const book = await removeBookDb(
-    interaction.options.getString("title") as string
-  );
-  if (book === null) {
+  const activeBook = await getOnlyCurrentReadingBook();
+  console.log("🚀 ~ removeBook ~ activeBook:", activeBook);
+  const bookTitle = interaction.options.getString("title") as string;
+  console.log("🚀 ~ removeBook ~ bookTitle:", bookTitle);
+  if (activeBook?.book.title === bookTitle) {
+    interaction.reply(
+      "Sorry can't remove a book that is currently being read."
+    );
+    return;
+  }
+  try {
+    const book = await removeBookDb(bookTitle);
+    interaction.reply(
+      `Book Removed: ${book.title} ${book.author || "undefined author"}`
+    );
+  } catch (error) {
     interaction.reply("Sorry no books where found with that title");
     return;
   }
-  interaction.reply(`Book: ${book.title} - ${book.createdBy}`);
 };
 
 export const listBooks = async (interaction: ChatInputCommandInteraction) => {
   const listBooks: APIEmbedField[] = [];
   const onlyElection = interaction.options.getBoolean("on_election");
   let embedBuiler: EmbedBuilder;
-  createNewCategory(interaction);
 
   if (onlyElection) {
     const currEle = await getCurrElection();
@@ -141,15 +151,29 @@ export const addBookToElection = async (
   }
 
   // Check if it's on the electin list:
-  const book = await getBookOnElection(election.id, id);
+  let book;
+  try {
+    book = await getBookOnElection(election.id, id);
+  } catch (error) {
+    console.log("🚀 ~ error ~ addBookToElection ~ getBookOnElection:", error);
+    interaction.reply("The book does not exist");
+    return;
+  }
 
   if (book) {
-    interaction.reply("The book is already selected");
+    interaction.reply("The book is already on election");
     return;
   }
 
   // Add to selected
-  const electionRepsonse = await addBookToElectionDb(election.id, id);
+  let electionRepsonse;
+  try {
+    electionRepsonse = await addBookToElectionDb(election.id, id);
+  } catch (error) {
+    console.log("🚀 ~ error ~ addBookToElection ~ addBookToElectionDb:", error);
+    interaction.reply("Cannot add that book to the election");
+    return;
+  }
 
   if (!electionRepsonse) {
     interaction.reply(
@@ -164,13 +188,19 @@ export const addBookToElection = async (
 export const updateBook = async (interaction: ChatInputCommandInteraction) => {
   const bookid = interaction.options.getInteger("book_id");
   console.log("🚀 ~ file: interface.ts:130 ~ updateBook ~ bookid:", bookid);
-
   if (!bookid) return;
 
-  // Check if book exists
-  const book = await getBookFromId(bookid);
+  // Check if book exist
+  let book;
+  try {
+    book = await getBookFromId(bookid);
+  } catch (error) {
+    interaction.reply("Book does not exist");
+    return;
+  }
+
   if (!book) {
-    interaction.reply("Book does not exists");
+    interaction.reply("Book does not exist");
     return;
   }
 
@@ -185,12 +215,17 @@ export const updateBook = async (interaction: ChatInputCommandInteraction) => {
     return;
   }
 
-  const updated = await updateBookDb(bookid, title, author, description);
-  if (!updated) {
-    interaction.reply("error updating book, contact @aaoeclipse");
+  try {
+    const updated = await updateBookDb(bookid, title, author, description);
+    if (!updated) {
+      interaction.reply("error updating book, contact @aaoeclipse");
+      return;
+    }
+    interaction.reply("book updated!");
+  } catch (error) {
+    interaction.reply("Book not found!");
     return;
   }
-  interaction.reply("book updated!");
 };
 
 export const getBookFromId = async (id: number) => {
@@ -200,11 +235,23 @@ export const getBookFromId = async (id: number) => {
 export const getBookDetailView = async (
   interaction: ChatInputCommandInteraction
 ) => {
+  console.log("🚀 Starting ~ getBookDetailView");
+
   const bookid = interaction.options.getInteger("book_id");
 
-  if (!bookid) return;
-  // check if book exists
-  const book = await getBookFromId(bookid);
+  if (!bookid) {
+    interaction.reply("Book not found");
+    return;
+  }
+  // check if book exist
+  let book;
+  try {
+    book = await getBookFromId(bookid);
+  } catch (error) {
+    console.log("🚀 ~ error:", error);
+    interaction.reply("Book not found");
+    return;
+  }
 
   if (!book) {
     interaction.reply("Book not found");
@@ -214,13 +261,16 @@ export const getBookDetailView = async (
   const embedBuiler = new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle(`${book.title}`)
-    .setAuthor({ name: `${book.author}` })
+    .setAuthor({ name: `${book.author || "unspecified"}` })
     .setThumbnail(
       "https://images.unsplash.com/photo-1589998059171-988d887df646?auto=format&fit=crop&q=80&w=2076&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
     )
-    .addFields({ name: "Description", value: `${book.description}` })
+    .addFields({
+      name: "Description",
+      value: `${book.description || "no description given"}`,
+    })
     .setTimestamp()
-    .setFooter({ text: `Recommended by ${book.createdBy}` });
+    .setFooter({ text: `Recommended by ${book.user.username}` });
 
   interaction.reply({ embeds: [embedBuiler] });
 };

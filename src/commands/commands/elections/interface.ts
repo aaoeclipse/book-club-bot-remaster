@@ -8,11 +8,15 @@ import {
   getCurrElection,
 } from "./infrastructure";
 import { createNewCategory } from "../channel/interface";
+import {
+  getOnlyCurrentReadingBook,
+  removePreviousBook,
+} from "../activeBook/interface";
 
 export const makeElections = async (
   interaction: ChatInputCommandInteraction
 ) => {
-  // Check if user exists
+  // Check if user exist
   const user = await getCurrUser(interaction.user.username);
 
   // Check if there is an election already running
@@ -75,6 +79,11 @@ export const finishElections = async (
       "no books on election, you have to add books to the election and vote for them"
     );
     return;
+  }
+  // Remove previous winner (if they exist)
+  const prevBook = await getOnlyCurrentReadingBook();
+  if (prevBook) {
+    await removePreviousBook();
   }
 
   // add winner to the db

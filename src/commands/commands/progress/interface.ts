@@ -20,8 +20,6 @@ import { handleUserChangeInChapter, removeRoles } from "../channel/interface";
  * for now I'm going to go with the first option.
  */
 
-// TODO:  Ahhhh damn i forgot what if someone mess up and wants to delete?!
-
 /**
  * Gets the progress of the user on that book
  * @param user_id userid
@@ -177,20 +175,11 @@ export const nextChapter = async (
   if (!progressUser || !progressUser.chapter) {
     const newProgress = await createProgressOnUserAndBookDb(user, currBookId);
 
-    // VALIDATE AND CREATE NEW CHANNEL
-    const isValid = isNewValValid(maxChapterOnBook, newProgress.chapter);
-    if (!isValid) {
-      interaction.reply(
-        "Sorry you can only progress no more than 5 at a time!"
-      );
-      return;
-    }
-
     await handleUserChangeInChapter(
       interaction,
       maxChapterOnBook,
       0,
-      newProgress.chapter,
+      1,
       currBook.book
     );
 
@@ -206,13 +195,6 @@ export const nextChapter = async (
     progressUser.id,
     progressUser.chapter + 1
   );
-
-  // VALIDATE AND CREATE NEW CHANNEL
-  const isValid = isNewValValid(maxChapterOnBook, newProgress.chapter);
-  if (!isValid) {
-    interaction.reply("Sorry you can only progress no more than 5 at a time!");
-    return;
-  }
 
   await handleUserChangeInChapter(
     interaction,

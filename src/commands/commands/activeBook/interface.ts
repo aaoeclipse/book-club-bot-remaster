@@ -1,5 +1,8 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import { getCurrReadingActiveBookDb } from "./infrastructure";
+import {
+  getCurrReadingActiveBookDb,
+  removeActiveBookDb,
+} from "./infrastructure";
 
 export const getCurrIdOfBook = async () => {
   const currBook = await getCurrReadingActiveBookDb();
@@ -49,4 +52,12 @@ export const getCurrentReadingBook = async (
 
 export const getOnlyCurrentReadingBook = async () => {
   return getCurrReadingActiveBookDb();
+};
+
+export const removePreviousBook = async () => {
+  const activeBook = await getCurrReadingActiveBookDb();
+  if (!activeBook) return;
+  const result = await removeActiveBookDb(activeBook.id);
+  if (!result) return;
+  return result;
 };
