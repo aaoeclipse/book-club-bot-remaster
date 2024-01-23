@@ -31,16 +31,12 @@ export const createNewCategory = async (
 
 export const handleUserChangeInChapter = async (
   interaction: ChatInputCommandInteraction,
-  max_value: number,
   curr_value: number,
   new_value: number,
   active_book: Book
 ) => {
   // check all values that are below the max value.
-  while (curr_value < new_value && curr_value < max_value) {
-    curr_value += 1;
-    createNewChannels(interaction, max_value, new_value, active_book);
-  }
+  createNewChannels(interaction, curr_value, new_value, active_book);
 };
 
 export const createNewChapterInCategory = async (
@@ -80,8 +76,8 @@ export const createNewChapterInCategory = async (
  */
 export const createNewChannels = async (
   interaction: ChatInputCommandInteraction,
-  max_channel: number,
-  new_channel: number,
+  curr_chapter: number,
+  new_chapter: number,
   active_book: Book
 ) => {
   if (!interaction.guild) return;
@@ -99,12 +95,11 @@ export const createNewChannels = async (
   // need to be created in the discord server
   for (
     // We add 1 to start on 1 instead of 0
-    let new_chapter = max_channel + 1;
-    new_chapter < new_channel + 1;
-    new_chapter++
+    let tmpChapter = curr_chapter + 1;
+    tmpChapter <= new_chapter;
+    tmpChapter++
   ) {
-    // TODO: Fix: This is so bad practice, this should be a promise.all
-    await createChannel(interaction, new_chapter, active_book, category);
+    await createChannel(interaction, tmpChapter, active_book, category);
   }
 };
 

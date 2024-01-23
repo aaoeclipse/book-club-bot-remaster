@@ -127,7 +127,6 @@ export const updateProgress = async (
       // Create the channels!
       await handleUserChangeInChapter(
         interaction,
-        maxChapterOnBook,
         progressUser?.chapter || 0,
         newVal,
         currBook.book
@@ -150,8 +149,9 @@ export const updateProgress = async (
 export const nextChapter = async (
   interaction: ChatInputCommandInteraction
 ): Promise<void> => {
-  // GET USER
+  // GET USER ID
   const user = await getCurrUser(interaction.user.username);
+
   // GET BOOK
   const currBook = await getOnlyCurrentReadingBook();
 
@@ -161,27 +161,13 @@ export const nextChapter = async (
     return;
   }
 
-  // GET MAX Progress
-  let maxChapterOnBook = await getMaxProgressOfBook(currBookId);
-
-  // If this is empty, it means that there is no one with any progress
-  // it should just create chapter 1
-  if (!maxChapterOnBook) maxChapterOnBook = 0;
-
   // GET PROGRESS OF USER ON THAT BOOK
   const progressUser = await checkProgress(user, currBookId);
 
   // If no progress then add ch1 to the progress
   if (!progressUser || !progressUser.chapter) {
-    const newProgress = await createProgressOnUserAndBookDb(user, currBookId);
-
-    await handleUserChangeInChapter(
-      interaction,
-      maxChapterOnBook,
-      0,
-      1,
-      currBook.book
-    );
+    await createProgressOnUserAndBookDb(user, currBookId);
+    await handleUserChangeInChapter(interaction, 0, 1, currBook.book);
 
     // Reply
 
@@ -198,7 +184,6 @@ export const nextChapter = async (
 
   await handleUserChangeInChapter(
     interaction,
-    maxChapterOnBook,
     progressUser.chapter,
     newProgress.chapter,
     currBook.book
