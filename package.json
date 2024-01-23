@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "npx nodemon",
+    "dev": "npx nodemon",
     "commands": "npm run build && node build/commands/loadCommands.js",
     "start": "npm run build && node build/index.js",
     "build": "rimraf ./build && tsc"
