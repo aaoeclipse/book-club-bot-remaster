@@ -269,14 +269,16 @@ export const getBookDetailView = async (
   const embedBuiler = new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle(`${book.title}`)
-    .setAuthor({ name: `${book.author || "unspecified"}` })
+    .setAuthor({ name: `${book.author || ""}` })
     .setThumbnail(
       "https://images.unsplash.com/photo-1589998059171-988d887df646?auto=format&fit=crop&q=80&w=2076&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
     )
-    .addFields({
-      name: "Description",
-      value: `${book.description || "no description given"}`,
-    })
+    .addFields([
+      {
+        name: "Description",
+        value: `${book.description || "no description given"}`,
+      },
+    ])
     .setTimestamp()
     .setFooter({ text: `Recommended by ${book.user.username}` });
 
