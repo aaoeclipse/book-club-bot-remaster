@@ -281,7 +281,7 @@ export const getBookDetailView = async (
     .addFields([
       {
         name: "Description",
-        value: `${book.description || "no description given"}`,
+        value: `${description || "no description given"}`,
       },
     ])
     .setTimestamp()
