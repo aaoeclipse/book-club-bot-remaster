@@ -266,6 +266,11 @@ export const getBookDetailView = async (
     return;
   }
 
+  let description = book.description;
+
+  if (description && description.length > 1024)
+    description = description.substring(0, 1019) + "...";
+
   const embedBuiler = new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle(`${book.title}`)
