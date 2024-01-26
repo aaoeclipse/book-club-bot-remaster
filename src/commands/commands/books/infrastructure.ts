@@ -68,6 +68,7 @@ export const updateBookDb = async (
 };
 
 export const getBookFromIdDb = async (id: number) => {
+  console.log("🚀 ~ Database - getBookFromIdDb");
   const book = await prisma.book.findFirst({
     where: { id: id },
     include: { user: true },

@@ -244,6 +244,8 @@ export const getBookDetailView = async (
     return;
   }
 
+  console.log("📝 ~ bookid:", bookid);
+
   if (!bookid) {
     interaction.reply("Book not found");
     return;
@@ -257,6 +259,7 @@ export const getBookDetailView = async (
     interaction.reply("Book not found");
     return;
   }
+  console.log("📝 ~ book info:", book);
 
   if (!book) {
     interaction.reply("Book not found");
