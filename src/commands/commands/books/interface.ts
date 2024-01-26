@@ -236,8 +236,13 @@ export const getBookDetailView = async (
   interaction: ChatInputCommandInteraction
 ) => {
   console.log("🚀 Starting ~ getBookDetailView");
-
-  const bookid = interaction.options.getInteger("book_id");
+  let bookid;
+  try {
+    bookid = interaction.options.getInteger("book_id");
+  } catch (error) {
+    interaction.reply("Error finding book");
+    return;
+  }
 
   if (!bookid) {
     interaction.reply("Book not found");

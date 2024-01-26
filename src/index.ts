@@ -21,7 +21,6 @@ import {
   updateProgress,
 } from "./commands/commands/progress/interface";
 import { getCurrentReadingBook } from "./commands/commands/activeBook/interface";
-import { createNewCategory } from "./commands/commands/channel/interface";
 
 const { TOKEN, CLIENT_ID } = getTokens();
 
